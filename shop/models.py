@@ -4,6 +4,7 @@ from io import BytesIO
 from PIL import Image
 from django.core.files import File
 from django.utils.text import slugify
+import cloudinary
 # Create your models here.
 
 
@@ -17,8 +18,8 @@ class Product(models.Model):
     description = models.TextField()
     slug = models.SlugField(blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=5)
-    image = models.ImageField(upload_to='', blank=True, null=True)
-    thumbnail = models.ImageField(upload_to='', blank=True, null=True)
+    image = cloudinary.models.CloudinaryField('image')
+    thumbnail = cloudinary.models.CloudinaryField('image')
     on_sale = models.BooleanField(default=False)
     sale_percentage = models.IntegerField(
         'Discount percentage', blank=True, default=0)
