@@ -5,6 +5,8 @@ from PIL import Image
 from django.core.files import File
 from django.utils.text import slugify
 import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 # Create your models here.
 
 

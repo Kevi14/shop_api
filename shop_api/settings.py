@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'shop',
     'rest_framework_simplejwt',
     'corsheaders',
-    'django_cleanup'
+    'django_cleanup',
+    'cloudinary',
 ]
 
 REST_FRAMEWORK = {
