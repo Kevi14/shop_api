@@ -3,7 +3,7 @@ from . import views
 from django.urls import path
 
 # Routers provide an easy way of automatically determining the URL conf.
-router = routers.DefaultRouter()
+router = routers.SimpleRouter()
 router.register(r'decks', views.DecksViewSet, basename='decks')
 router.register(r'images', views.ProductImagesViewSet, basename='image')
 router.register(r'orders', views.OrdersViewSet, basename='orders')
