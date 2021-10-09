@@ -57,7 +57,8 @@ def log_deleted_question(sender, instance, using, **kwargs):
 
 
 class ProductImages(models.Model):
-    image = models.ImageField(upload_to='', blank=True, null=True)
+#     image = models.ImageField(upload_to='', blank=True, null=True)
+    image=CloudinaryField('image')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     def get_image(self):
