@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from .models import *
 from .serializers import *
 from rest_framework.mixins import DestroyModelMixin
-from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS,AllowAny
 from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
 from paypalcheckoutsdk.orders import OrdersGetRequest
@@ -182,7 +182,10 @@ def capture_order(id):
 
 class ReadOnly(BasePermission):
     def has_permission(self, request, view):
+        print(SAFE_METHODS)
         return request.method in SAFE_METHODS
+
+
 
 
 class CapturePay(APIView):
@@ -274,6 +277,14 @@ class OrdersViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
+    def get_permissions(self):
+        if self.action == 'list':
+            permission_classes = [IsAuthenticated]
+        elif self.action == 'retrieve':
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [ReadOnly]
+        return [permission() for permission in permission_classes]
 
 
 class ItemsOrderedViewSet(viewsets.ModelViewSet):
