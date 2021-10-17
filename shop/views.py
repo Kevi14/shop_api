@@ -273,6 +273,16 @@ class OrdersViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
     # parser_classes = (MultiPartParser,)
+    def get_queryset(self):
+        """
+        Optionally restricts the returned purchases to a given user,
+        by filtering against a `username` query parameter in the URL.
+        """
+        queryset = Order.objects.all()
+        order_id = self.request.query_params.get('order_id')
+        if order_id is not None:
+            queryset = queryset.filter(order_id=order_id)
+        return queryset
     model = Order
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True

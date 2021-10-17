@@ -12,8 +12,8 @@ class DeckSerializer(serializers.ModelSerializer):
             "description",
             "price",
             "get_image",
-            "get_thumbnail",
             "image",
+            "created_at"
         )
 
 
