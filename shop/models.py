@@ -22,7 +22,7 @@ class Product(models.Model):
     slug = models.SlugField(blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=5)
     image = CloudinaryField('image')
-    thumbnail = CloudinaryField('image')
+    # thumbnail = CloudinaryField('image')
     on_sale = models.BooleanField(default=False)
     sale_percentage = models.IntegerField(
         'Discount percentage', blank=True, default=0)
@@ -61,6 +61,10 @@ class ProductImages(models.Model):
 
 
 class Order(models.Model):
+    CATEGORY_CHOICES = (
+        ("Processing", "Processing"),
+        ("Shipped", "Shipped"),
+        ("Delivered", "Delivered"))
     order_id = models.CharField(max_length=40, unique=True)
     state = models.CharField(max_length=40)
     country = models.CharField(max_length=100)
@@ -74,7 +78,7 @@ class Order(models.Model):
     tracking_number = models.CharField(max_length=200, null=True)
     contact_email = models.EmailField(null=True)
     city = models.CharField(max_length=100,null=True)
-    # status = models.CharField(choices=)
+    status = models.CharField(choices=CATEGORY_CHOICES, default="Processing",max_length=40)
 
 
 class ItemOrdered(models.Model):

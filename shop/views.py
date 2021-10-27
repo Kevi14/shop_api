@@ -93,7 +93,7 @@ def create_order(data, debug=False):
                             # "admin_area_1": billing['state'],
                             "admin_area_2": state,
                             "postal_code": billing['zip_code'],
-                            "country_code": pycountry.countries.get(name=billing['country']).alpha_2
+                            "country_code": billing['country']
                         }
                     }
                 }
@@ -269,7 +269,7 @@ class DecksViewSet(viewsets.ModelViewSet):
 
 
 class OrdersViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated|ReadOnly]
+    # permission_classes = [AllowAny]
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
     # parser_classes = (MultiPartParser,)
@@ -291,9 +291,13 @@ class OrdersViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             permission_classes = [IsAuthenticated]
         elif self.action == 'retrieve':
-            permission_classes = [AllowAny]
+            order_id = self.request.query_params.get('order_id')
+            if order_id is not None:
+                permission_classes = [AllowAny]
+            else:
+                permission_classes = [IsAuthenticated]
         else:
-            permission_classes = [ReadOnly]
+            permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
 
