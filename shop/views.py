@@ -285,18 +285,19 @@ class OrdersViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
-    # def get_permissions(self):
-    #     if self.action == 'list':
-    #         permission_classes = [IsAuthenticated]
-    #     elif self.action == 'retrieve':
-    #         order_id = self.request.query_params.get('order_id')
-    #         if order_id is not None:
-    #             permission_classes = [AllowAny]
-    #         else:
-    #             permission_classes = [IsAuthenticated]
-    #     else:
-    #         permission_classes = [IsAuthenticated]
-    #     return [permission() for permission in permission_classes]
+
+    def get_permissions(self):
+        if self.action == 'list':
+            permission_classes = [IsAuthenticated]
+        elif self.action == 'retrieve':
+            order_id = self.request.query_params.get('order_id')
+            if order_id is not None:
+                permission_classes = [AllowAny]
+            else:
+                permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
 
 class ItemsOrderedViewSet(viewsets.ModelViewSet):
@@ -350,7 +351,6 @@ class ProductImagesViewSet(viewsets.ModelViewSet):
         # print(request.data)
         if len(request.data) != 0:
             for x, y in zip(new_data['image'], new_data['product']):
-                # print(x,y)
                 data_list.append({'image': x, 'product': y})
         # # print(dict(request.data)['product'])
         serializer = self.get_serializer(data=data_list, many=True)
