@@ -13,6 +13,8 @@ from paypalcheckoutsdk.orders import OrdersCaptureRequest, OrdersCreateRequest, 
 from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment, LiveEnvironment
 from paypalhttp import HttpError
 from decouple import config
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 import pycountry
 import json
 # Create your views here.
@@ -208,7 +210,7 @@ class RegisterOrder(APIView, DestroyModelMixin):
             'adress_line': address.address_line_1,
             'paid': True,
             'full_name': data.purchase_units[0].shipping.name.full_name,
-            'country': pycountry.countries.get(alpha_2=address.country_code).name,
+            'country': pycountry.countries.get(alpha_2=address.country_code).name.lower(),
             'zip_code': address.postal_code,
             'contact_email': data.purchase_units[0].payee.email_address
             # 'city':
@@ -267,19 +269,12 @@ class DecksViewSet(viewsets.ModelViewSet):
 class OrdersViewSet(viewsets.ModelViewSet):
     # permission_classes = [AllowAny]
     serializer_class = OrderSerializer
-    queryset = Order.objects.all()
+    queryset = Order.objects.all().order_by("-created_at")
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     # parser_classes = (MultiPartParser,)
+    filter_fields = ('order_id', "country", "status")
+    search_fields = ('full_name', 'contact_email')
 
-    def get_queryset(self):
-        """
-        Optionally restricts the returned purchases to a given user,
-        by filtering against a `username` query parameter in the URL.
-        """
-        queryset = Order.objects.all()
-        order_id = self.request.query_params.get('order_id')
-        if order_id is not None:
-            queryset = queryset.filter(order_id=order_id)
-        return queryset.order_by("-created_at")
     model = Order
 
     def update(self, request, *args, **kwargs):
@@ -289,12 +284,17 @@ class OrdersViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'list':
             permission_classes = [IsAuthenticated]
+
+            # permission_classes = [IsAuthenticated]
         elif self.action == 'retrieve':
             order_id = self.request.query_params.get('order_id')
             if order_id is not None:
                 permission_classes = [AllowAny]
             else:
                 permission_classes = [IsAuthenticated]
+
+                # permission_classes = [IsAuthenticated]
+
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]

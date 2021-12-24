@@ -48,7 +48,6 @@ class Product(models.Model):
         url = f'/{self.category}/{self.slug}/'
         return url
 
-    
 
 class ProductImages(models.Model):
     image = models.ImageField(upload_to='', blank=True, null=True)
@@ -62,9 +61,9 @@ class ProductImages(models.Model):
 
 class Order(models.Model):
     CATEGORY_CHOICES = (
-        ("Processing", "Processing"),
-        ("Shipped", "Shipped"),
-        ("Delivered", "Delivered"))
+        ("processing", "processing"),
+        ("shipped", "shipped"),
+        ("delivered", "delivered"))
     order_id = models.CharField(max_length=40, unique=True)
     state = models.CharField(max_length=40)
     country = models.CharField(max_length=100)
@@ -77,8 +76,9 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     tracking_number = models.CharField(max_length=200, null=True)
     contact_email = models.EmailField(null=True)
-    city = models.CharField(max_length=100,null=True)
-    status = models.CharField(choices=CATEGORY_CHOICES, default="Processing",max_length=40)
+    city = models.CharField(max_length=100, null=True)
+    status = models.CharField(choices=CATEGORY_CHOICES,
+                              default="processing", max_length=40)
 
 
 class ItemOrdered(models.Model):
