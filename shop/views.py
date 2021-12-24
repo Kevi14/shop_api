@@ -291,7 +291,7 @@ class OrdersViewSet(viewsets.ModelViewSet):
             if order_id is not None:
                 permission_classes = [AllowAny]
             else:
-                permission_classes = [AllowAny]
+                permission_classes = [IsAuthenticated]
 
                 # permission_classes = [IsAuthenticated]
 
