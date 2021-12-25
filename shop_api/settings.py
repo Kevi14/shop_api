@@ -98,6 +98,7 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'shop_api.wsgi.application'
 
 
