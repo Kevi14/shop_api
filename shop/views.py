@@ -34,7 +34,7 @@ def create_order(data, debug=False):
     for item in items:
         item_object = {
             "name": item['title'],
-            "description": item['description'],
+            #"description": item['description'],
             "sku": item['id'],
             "unit_amount": {
                 "currency_code": "USD",
