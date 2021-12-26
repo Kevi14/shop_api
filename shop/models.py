@@ -15,7 +15,6 @@ from django.dispatch import receiver
 # Create your models here.
 
 
-
 class Product(models.Model):
     CATEGORY_CHOICES = (
         ("DECK", "DECK"),)
@@ -45,26 +44,32 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
-
     def get_absolute_url(self):
         url = f'/{self.category}/{self.slug}/'
         return url
 
-@receiver(pre_delete, sender=None, dispatch_uid='question_delete_signal')
+
+@receiver(pre_delete, sender=Product, dispatch_uid='question_delete_signal')
 def log_deleted_question(sender, instance, using, **kwargs):
     image = instance.image
-    cloudinary.uploader.destroy(image.public_id,invalidate=True)
+    cloudinary.uploader.destroy(image.public_id, invalidate=True)
 
 
 class ProductImages(models.Model):
-#     image = models.ImageField(upload_to='', blank=True, null=True)
-    image=CloudinaryField('image')
+    #     image = models.ImageField(upload_to='', blank=True, null=True)
+    image = CloudinaryField('image', blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     def get_image(self):
         if self.image:
             return 'http://127.0.0.1:8000' + self.image.url
         return ''
+
+
+@receiver(pre_delete, sender=ProductImages, dispatch_uid='question_delete_signal')
+def log_deleted_question(sender, instance, using, **kwargs):
+    image = instance.image
+    cloudinary.uploader.destroy(image.public_id, invalidate=True)
 
 
 class Order(models.Model):
@@ -80,7 +85,7 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     tracking_number = models.CharField(max_length=200, null=True)
     contact_email = models.EmailField(null=True)
-    city = models.CharField(max_length=100,null=True)
+    city = models.CharField(max_length=100, null=True)
     # status = models.CharField(choices=)
 
 
