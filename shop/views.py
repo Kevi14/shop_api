@@ -6,14 +6,15 @@ from rest_framework.response import Response
 from .models import *
 from .serializers import *
 from rest_framework.mixins import DestroyModelMixin
-from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS, AllowAny
 from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
-from paypalcheckoutsdk.orders import OrdersGetRequest
-from paypalcheckoutsdk.orders import OrdersCaptureRequest, OrdersCreateRequest
+from paypalcheckoutsdk.orders import OrdersCaptureRequest, OrdersCreateRequest, OrdersGetRequest
 from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment, LiveEnvironment
 from paypalhttp import HttpError
 from decouple import config
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 import pycountry
 import json
 # Create your views here.
@@ -25,15 +26,15 @@ def create_order(data, debug=False):
     items_data = []
     total = 0
     state = ""
-    if billing["state"] != None and billing["state"] != "":
-        state = billing["state"]
-    else:
+    if billing["country"] != None and billing["country"] != "" and billing['country'] != "US":
         state = billing["country"]
+    else:
+        state = billing["state"]
 
     for item in items:
         item_object = {
             "name": item['title'],
-            "description": item['description'],
+            #"description": item['description'],
             "sku": item['id'],
             "unit_amount": {
                 "currency_code": "USD",
@@ -48,7 +49,7 @@ def create_order(data, debug=False):
         {
             "intent": "CAPTURE",
             "application_context": {
-                "return_url": "http://localhost:8080/payment_successful",
+                "return_url": "https://school-of-magic.herokuapp.com/payment_successful",
                 "cancel_url": "https://www.example.com",
                 "brand_name": "School of Magic",
                 "landing_page": "BILLING",
@@ -57,16 +58,16 @@ def create_order(data, debug=False):
             },
             "purchase_units": [
                 {
-                "payee": {
-                "email_address": str(billing['email']),
-                },
-            
+                    "payee": {
+                        "email_address": str(billing['email']),
+                    },
+
                     # "reference_id": "PUHF",
                     # "description": "Sporting Goods",
 
                     # "custom_id": "CUST-HighFashions",
                     # "soft_descriptor": "HighFashions",
-                   
+
                     "amount": {
                         "currency_code": "USD",
                         "value": f"{total}",
@@ -90,17 +91,16 @@ def create_order(data, debug=False):
                             "address_line_1": billing['address_line'],
                             # "address_line_2": billing['address_line'],
 
-                            # "admin_area_1": billing['state'],
-                            "admin_area_2": state,
+                            "admin_area_1": state,
+                            "admin_area_2": billing['city'],
                             "postal_code": billing['zip_code'],
-                            "country_code": pycountry.countries.get(name=billing['country']).alpha_2
+                            "country_code": billing['country']
                         }
                     }
                 }
             ]
         }
     )
-    # print(request_body)
 
     client_id = config("PAYPAL_ID")
     client_secret = config("PAYPAL_SECRET")
@@ -182,6 +182,7 @@ def capture_order(id):
 
 class ReadOnly(BasePermission):
     def has_permission(self, request, view):
+        print(SAFE_METHODS)
         return request.method in SAFE_METHODS
 
 
@@ -192,12 +193,13 @@ class CapturePay(APIView):
         return Response("OK")
 
 
-class RegisterOrder(APIView,DestroyModelMixin):
+class RegisterOrder(APIView, DestroyModelMixin):
     queryset = Order.objects.all()
     # permission_classes = [IsAuthenticated | ReadOnly]
     serializer_class = OrderSerializer
+
     def post(self, request, format=None):
-        
+
         id = request.data['id']
         data = get_order(id).result
         address = data.purchase_units[0].shipping.address
@@ -208,30 +210,29 @@ class RegisterOrder(APIView,DestroyModelMixin):
             'adress_line': address.address_line_1,
             'paid': True,
             'full_name': data.purchase_units[0].shipping.name.full_name,
-            'country': pycountry.countries.get(alpha_2=address.country_code).name,
+            'country': pycountry.countries.get(alpha_2=address.country_code).name.lower(),
             'zip_code': address.postal_code,
-            'contact_email':data.purchase_units[0].payee.email_address
+            'contact_email': data.purchase_units[0].payee.email_address
             # 'city':
 
         })
 
         if serializer.is_valid():
-            order =serializer.save()
+            order = serializer.save()
             for item in data.purchase_units[0].items:
                 items_ordered_serializer = CreateItemsOrderedSerializer(data={
-                'amount':item.quantity,
-                'order':order.order_id,
-                'product':item.sku
-                
-              
-            })
+                    'amount': item.quantity,
+                    'order': order.order_id,
+                    'product': item.sku
+
+
+                })
                 if items_ordered_serializer.is_valid():
                     items_ordered_serializer.save()
-                else :
+                else:
                     print(items_ordered_serializer.errors)
         else:
             print(serializer.errors)
-
 
         # Orders.new()
         return Response("OK")
@@ -266,18 +267,41 @@ class DecksViewSet(viewsets.ModelViewSet):
 
 
 class OrdersViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated|ReadOnly]
+    # permission_classes = [AllowAny]
     serializer_class = OrderSerializer
-    queryset = Order.objects.all()
+    queryset = Order.objects.all().order_by("-created_at")
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     # parser_classes = (MultiPartParser,)
+    filter_fields = ('order_id', "country", "status")
+    search_fields = ('full_name', 'contact_email')
+
     model = Order
+
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
 
+    def get_permissions(self):
+        if self.action == 'list':
+            permission_classes = [IsAuthenticated]
+
+            # permission_classes = [IsAuthenticated]
+        elif self.action == 'retrieve':
+            order_id = self.request.query_params.get('order_id')
+            if order_id is not None:
+                permission_classes = [AllowAny]
+            else:
+                permission_classes = [IsAuthenticated]
+
+                # permission_classes = [IsAuthenticated]
+
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
 
 class ItemsOrderedViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated|ReadOnly]
+    permission_classes = [IsAuthenticated | ReadOnly]
     serializer_class = ItemsOrderedSerializer
     queryset = ItemOrdered.objects.all()
     # parser_classes = (MultiPartParser,)
@@ -294,14 +318,13 @@ class ItemsOrderedViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(order_id=order_id)
         return queryset
 
-
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
 
 
 class ProductImagesViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated|ReadOnly]
+    permission_classes = [IsAuthenticated | ReadOnly]
     serializer_class = ImageSerializer
     # queryset = ProductImages.objects.all()
     parser_classes = (MultiPartParser,)
@@ -328,7 +351,6 @@ class ProductImagesViewSet(viewsets.ModelViewSet):
         # print(request.data)
         if len(request.data) != 0:
             for x, y in zip(new_data['image'], new_data['product']):
-            # print(x,y)
                 data_list.append({'image': x, 'product': y})
         # # print(dict(request.data)['product'])
         serializer = self.get_serializer(data=data_list, many=True)

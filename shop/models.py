@@ -26,8 +26,6 @@ class Product(models.Model):
     slug = models.SlugField(blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=5)
     image = CloudinaryField('image')
-    # image = models.ImageField(blank=True,null=True)
-    # thumbnail = CloudinaryField('image')
     on_sale = models.BooleanField(default=False)
     sale_percentage = models.IntegerField(
         'Discount percentage', blank=True, default=0)
@@ -56,7 +54,6 @@ def log_deleted_question(sender, instance, using, **kwargs):
 
 
 class ProductImages(models.Model):
-    #     image = models.ImageField(upload_to='', blank=True, null=True)
     image = CloudinaryField('image', blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
@@ -73,6 +70,10 @@ def log_deleted_question(sender, instance, using, **kwargs):
 
 
 class Order(models.Model):
+    CATEGORY_CHOICES = (
+        ("processing", "processing"),
+        ("shipped", "shipped"),
+        ("delivered", "delivered"))
     order_id = models.CharField(max_length=40, unique=True)
     state = models.CharField(max_length=40)
     country = models.CharField(max_length=100)
@@ -86,7 +87,8 @@ class Order(models.Model):
     tracking_number = models.CharField(max_length=200, null=True)
     contact_email = models.EmailField(null=True)
     city = models.CharField(max_length=100, null=True)
-    # status = models.CharField(choices=)
+    status = models.CharField(choices=CATEGORY_CHOICES,
+                              default="processing", max_length=40)
 
 
 class ItemOrdered(models.Model):
