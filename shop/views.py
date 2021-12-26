@@ -49,7 +49,7 @@ def create_order(data, debug=False):
         {
             "intent": "CAPTURE",
             "application_context": {
-                "return_url": "http://localhost:8080/payment_successful",
+                "return_url": "https://school-of-magic.herokuapp.com/payment_successful",
                 "cancel_url": "https://www.example.com",
                 "brand_name": "School of Magic",
                 "landing_page": "BILLING",
