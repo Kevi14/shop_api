@@ -50,7 +50,7 @@ class Product(models.Model):
 
 
 class ProductImages(models.Model):
-    image = models.ImageField(upload_to='', blank=True, null=True)
+    image=CloudinaryField('image')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     def get_image(self):
