@@ -30,8 +30,6 @@ class Product(models.Model):
     slug = models.SlugField(blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=5)
     image = CloudinaryField('image')
-    # image = models.ImageField(blank=True,null=True)
-    # thumbnail = CloudinaryField('image')
     on_sale = models.BooleanField(default=False)
     sale_percentage = models.IntegerField(
         'Discount percentage', blank=True, default=0)
@@ -60,7 +58,6 @@ def log_deleted_question(sender, instance, using, **kwargs):
 
 
 class ProductImages(models.Model):
-    #     image = models.ImageField(upload_to='', blank=True, null=True)
     image = CloudinaryField('image', blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
@@ -96,7 +93,6 @@ class Order(models.Model):
     city = models.CharField(max_length=100, null=True)
     status = models.CharField(choices=CATEGORY_CHOICES,
                               default="processing", max_length=40)
-    # status = models.CharField(choices=)
 
 
 class ItemOrdered(models.Model):

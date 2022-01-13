@@ -1,3 +1,4 @@
+
 from rest_framework import serializers
 from rest_framework.serializers import raise_errors_on_nested_writes
 from rest_framework.utils import model_meta
@@ -13,12 +14,10 @@ class DeckSerializer(serializers.ModelSerializer):
             "get_absolute_url",
             "description",
             "price",
-            # "get_image",
-            # "get_thumbnail",
+            "get_image",
             "image",
             "category_id",
             "category"
-
         )
 
     # def create(self, validated_data):
@@ -105,8 +104,16 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ClientOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ("order_id", "created_at", "tracking_number",
+                  "status", "contact_email")
+
+
 class ItemsOrderedSerializer(serializers.ModelSerializer):
     product = DeckSerializer(many=False, read_only=True)
+    order = ClientOrderSerializer(read_only=True)
 
     class Meta:
         model = ItemOrdered
