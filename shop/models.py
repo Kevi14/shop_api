@@ -1,4 +1,5 @@
 """Shop-models module."""
+
 from django.db import models
 from io import BytesIO
 from PIL import Image
@@ -14,14 +15,17 @@ from django.dispatch import receiver
 
 # Create your models here.
 
+class Category(models.Model):
+    category = models.CharField(max_length=30, unique=True)
+    description = models.TextField(blank=True, null=True)
+
 
 class Product(models.Model):
-    CATEGORY_CHOICES = (
-        ("DECK", "DECK"),)
-    # ("FEBRUARY", "February"),,)
-
     title = models.CharField(max_length=200)
-    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES)
+    # category = models.CharField(max_length=30, choices=CATEGORY_CHOICES)
+    category = models.ForeignKey(
+        Category, on_delete=models.DO_NOTHING, to_field='category', null=False)
+
     description = models.TextField()
     slug = models.SlugField(blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=5)
@@ -47,7 +51,7 @@ class Product(models.Model):
         return url
 
 
-@receiver(pre_delete, sender=Product, dispatch_uid='question_delete_signal')
+@ receiver(pre_delete, sender=Product, dispatch_uid='question_delete_signal')
 def log_deleted_question(sender, instance, using, **kwargs):
     image = instance.image
     cloudinary.uploader.destroy(image.public_id, invalidate=True)
@@ -63,7 +67,7 @@ class ProductImages(models.Model):
         return ''
 
 
-@receiver(pre_delete, sender=ProductImages, dispatch_uid='question_delete_signal')
+@ receiver(pre_delete, sender=ProductImages, dispatch_uid='question_delete_signal')
 def log_deleted_question(sender, instance, using, **kwargs):
     image = instance.image
     cloudinary.uploader.destroy(image.public_id, invalidate=True)
@@ -92,7 +96,7 @@ class Order(models.Model):
 
 
 class ItemOrdered(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
     amount = models.IntegerField()
     order = models.ForeignKey(
         Order, on_delete=models.CASCADE, to_field='order_id')

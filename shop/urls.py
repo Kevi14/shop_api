@@ -7,13 +7,18 @@ router = routers.SimpleRouter()
 router.register(r'decks', views.DecksViewSet, basename='decks')
 router.register(r'images', views.ProductImagesViewSet, basename='image')
 router.register(r'orders', views.OrdersViewSet, basename='orders')
-router.register(r'items_ordered', views.ItemsOrderedViewSet, basename='items_ordered')
+router.register(r'items_ordered', views.ItemsOrderedViewSet,
+                basename='items_ordered')
+router.register(r'categories', views.CategoryViewSet,
+                basename='categories')
+
 
 urlpatterns = [
-    path('products/<slug:category_slug>/<slug:product_slug>/', views.DecksViewSet.as_view({'get':'list'})),
-    path('paypal_payment',views.CreatePayLink.as_view()),
-    path('capture_payment/',views.CapturePay.as_view()),
-    path('register_order/',views.RegisterOrder.as_view())
+    path('products/<slug:category_slug>/<slug:product_slug>/',
+         views.DecksViewSet.as_view({'get': 'list'})),
+    path('paypal_payment', views.CreatePayLink.as_view()),
+    path('capture_payment/', views.CapturePay.as_view()),
+    path('register_order/', views.RegisterOrder.as_view())
 ]
 
 
