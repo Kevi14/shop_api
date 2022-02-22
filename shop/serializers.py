@@ -14,7 +14,7 @@ class DeckSerializer(serializers.ModelSerializer):
             "get_absolute_url",
             "description",
             "price",
-            "get_image",
+            # "get_image",
             "image",
             "category_id",
             "category"
