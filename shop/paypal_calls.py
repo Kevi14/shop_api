@@ -12,10 +12,11 @@ def create_order(data, debug=False):
     items_data = []
     total = 0
     state = ""
-    if billing["country"] != None and billing["country"] != "" and billing['country'] != "US":
-        state = billing["country"]
-    else:
-        state = billing["state"]
+    state = billing["country"] if billing["country"] and billing['country'] != 'US' else billing["state"]
+    # if billing["country"] and billing['country'] != 'US':
+    #     state = billing["country"]
+    # else:
+    #     state = billing["state"]
 
     for item in items:
         item_object = {
@@ -139,7 +140,7 @@ def get_order(order_id):
     return response
 
 
-def capture_order(id):
+def capture_order(id: int) -> None:
     client_id = config("PAYPAL_ID")
     client_secret = config("PAYPAL_SECRET")
 # Creating an environment

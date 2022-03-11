@@ -2,7 +2,6 @@
 
 from django.db import models
 from io import BytesIO
-from PIL import Image
 from django.core.files import File
 from django.utils.text import slugify
 import cloudinary
