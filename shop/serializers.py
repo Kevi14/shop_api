@@ -19,6 +19,24 @@ class DeckSerializer(serializers.ModelSerializer):
             "category"
         )
 
+    def validate_title(self, value):
+        if len(value) < 3:
+            raise serializers.ValidationError(
+                'Title has to be longer than 3 characters.')
+        return value
+
+    def validate_description(self, value):
+        if len(value) < 25:
+            raise serializers.ValidationError(
+                'Description has to be longer than 25 characters.')
+        return value
+
+    def validate_price(self, value):
+        if value < 0 or value > 999.99:
+            raise serializers.ValidationError(
+                "A valid price is between 0 and 1000 with a max of 2 decimal values.")
+        return value
+
     # def create(self, validated_data):
     #     """
     #     We have a bit of extra checking around this in order to provide
