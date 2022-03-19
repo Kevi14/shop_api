@@ -13,9 +13,10 @@ import os
 from pathlib import Path
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
-#Third party imports
+# Third party imports
 from decouple import config
 import datetime
+import cloudinary
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,9 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1','api-school-of-magic.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'api.todoapi.xyz', "0.0.0.0", "todoapi.xyz"]
 
 
 # Application definition
@@ -53,7 +54,7 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        
+
         # 'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': (
@@ -65,7 +66,6 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=10),
     'ROTATE_REFRESH_TOKENS': True,
 }
-
 
 
 MIDDLEWARE = [
@@ -163,7 +163,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR /'staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -173,11 +173,19 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-MEDIA_URL ='/media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
-  'http://127.0.0.1:8000',
-  'https://school-of-magic.herokuapp.com/'
+    'http://127.0.0.1:8000',
+    'http://localhost:8080',
+    'https://www.todoapi.xyz'
+)
+
+cloudinary.config(
+    cloud_name=config("CLOUDINARY_CLOUD_NAME"),
+    api_key=config("CLOUDINARY_API_KEY"),
+    api_secret=config("CLOUDINARY_API_SECRET"),
+    secure=config("CLOUDINARY_SECURE")
 )
